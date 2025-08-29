@@ -1,15 +1,16 @@
 # SelfSens Chat API
 
-A Spring Boot application with a professional package structure, built with best practices for enterprise development.
+A Spring Boot application with integrated AI chat functionality using Google Gemini 2.0 Flash, built with professional package structure and loose coupling architecture.
 
 ## 🏗️ Project Structure
 
-The project follows a professional layered architecture pattern:
+The project follows a professional layered architecture pattern with loose coupling:
 
 ```
 src/main/java/SelfSens/SelfSens/
 ├── config/                 # Configuration classes
-│   └── VertexAiConfig.java
+│   ├── VertexAiConfig.java
+│   └── EnvironmentConfig.java
 ├── constants/              # Application constants
 │   └── ApplicationConstants.java
 ├── controller/             # REST API controllers
@@ -23,7 +24,11 @@ src/main/java/SelfSens/SelfSens/
 │   └── GlobalExceptionHandler.java
 ├── service/                # Business logic services
 │   ├── ChatService.java
-│   └── HealthService.java
+│   ├── HealthService.java
+│   ├── AiModelService.java
+│   ├── GeminiAiService.java
+│   ├── MockAiService.java
+│   └── AiServiceFactory.java
 ├── util/                   # Utility classes
 │   └── RequestUtils.java
 ├── validation/             # Input validation
@@ -33,6 +38,8 @@ src/main/java/SelfSens/SelfSens/
 
 ## ✨ Features
 
+- **AI-powered chat** using Google Gemini 2.0 Flash
+- **Loose coupling architecture** for easy AI provider switching
 - **Professional package organization** following Spring Boot best practices
 - **Structured JSON API responses** with consistent error handling
 - **Comprehensive validation** with custom validators
@@ -40,7 +47,8 @@ src/main/java/SelfSens/SelfSens/
 - **Proper logging** with SLF4J and Logback
 - **Health check endpoint** for monitoring
 - **Input sanitization** and content filtering
-- **Mock chat service** (ready for AI integration)
+- **Environment-based configuration** for API keys
+- **Fallback to mock service** when AI is unavailable
 
 ## 🚀 Current Status
 
@@ -50,20 +58,43 @@ src/main/java/SelfSens/SelfSens/
 - Global exception handling
 - Input validation and sanitization
 - Health check endpoint
-- Mock chat service
+- **Google Gemini 2.0 Flash integration**
+- **Loose coupling architecture**
+- **Environment variable configuration**
+- **AI service factory pattern**
+- **Fallback mock service**
 - Comprehensive logging
 - Professional error handling
 
-⚠️ **TEMPORARILY DISABLED:**
-- Spring AI integration (due to dependency resolution issues)
-- Google Vertex AI integration
-
 🔄 **NEXT STEPS:**
-- Resolve Spring AI dependency issues
-- Integrate with actual AI service
-- Add authentication and security
-- Implement rate limiting
+- Add more AI providers (OpenAI, Claude, etc.)
+- Implement authentication and security
+- Add rate limiting
 - Add monitoring and metrics
+- Docker containerization
+
+## 🤖 AI Integration Architecture
+
+### Loose Coupling Design
+The application uses a factory pattern and interface-based design to easily switch between different AI providers:
+
+```
+ChatService → AiServiceFactory → AiModelService (Interface)
+                                    ↓
+                    ┌─────────────────────────────┐
+                    │                             │
+            GeminiAiService              MockAiService
+            (Real AI)                   (Fallback)
+```
+
+### Available AI Services
+1. **Google Gemini 2.0 Flash** - Primary AI service
+2. **Mock AI Service** - Fallback service with intelligent responses
+
+### Easy Provider Switching
+- Set `AI_PROVIDER` environment variable
+- Automatically falls back to available services
+- No code changes required to switch providers
 
 ## 📡 API Response Format
 
@@ -74,9 +105,9 @@ All API endpoints return responses in a consistent JSON format using the `ApiRes
 {
   "success": true,
   "message": "Chat response generated successfully",
-  "data": "Here's a joke about Spring Boot: Why did the Spring Boot developer go broke? Because he used too many @Autowired annotations!",
+  "data": "Java is a high-level, class-based, object-oriented programming language...",
   "statusCode": 200,
-  "timestamp": "2024-01-15T10:30:45.123",
+  "timestamp": "2025-08-29T02:09:01.117156700",
   "path": "/api/chat/prompt"
 }
 ```
@@ -87,7 +118,7 @@ All API endpoints return responses in a consistent JSON format using the `ApiRes
   "success": false,
   "message": "Validation failed: Chat prompt validation failed",
   "statusCode": 400,
-  "timestamp": "2024-01-15T10:30:45.123",
+  "timestamp": "2025-08-29T02:09:01.117156700",
   "path": "/api/chat/prompt",
   "errors": {
     "prompt": "Prompt cannot be empty"
@@ -100,46 +131,53 @@ All API endpoints return responses in a consistent JSON format using the `ApiRes
 ### 1. Chat Endpoint
 - **URL**: `GET /api/chat/prompt`
 - **Query Parameters**: 
-  - `prompt` (optional): The message to send (default: "Tell me a joke about spring boot.")
-- **Response**: Mock chat response wrapped in ApiResponse format
+  - `prompt` (optional): The message to send to AI (default: "Tell me a joke about spring boot.")
+- **Response**: AI-generated response wrapped in ApiResponse format
 - **Validation**: Input length, content filtering, and sanitization
 
 ### 2. Health Check
 - **URL**: `GET /api/health`
 - **Response**: Service health status, version, and system information
 
-## 🛡️ Validation & Security
+### 3. AI Service Information
+- **URL**: `GET /api/chat/service-info`
+- **Response**: Current AI service provider and configuration
 
-### Input Validation
-- **Prompt Length**: 1-1000 characters
-- **Content Filtering**: Blocks potentially harmful content
-- **Sanitization**: Input cleaning and validation
-
-### Error Handling
-- **Global Exception Handler**: Catches all exceptions and formats them consistently
-- **Custom Exceptions**: Specific exception types for different error scenarios
-- **Detailed Error Messages**: Field-specific error information
+### 4. Available Services
+- **URL**: `GET /api/chat/available-services`
+- **Response**: List of all available AI services and their status
 
 ## ⚙️ Configuration
 
-### Current Configuration (`application.properties`)
-```properties
-# Application Configuration
-spring.application.name=SelfSens
-server.port=8080
+### Environment Variables
+Set these environment variables for AI configuration:
 
-# Logging Configuration
-logging.level.SelfSens.SelfSens=INFO
-logging.level.org.springframework=INFO
+```bash
+# Required: Google API Key
+export GOOGLE_API_KEY="your_google_api_key_here"
+
+# Optional: AI Configuration
+export GEMINI_MODEL="gemini-2.0-flash"
+export GEMINI_TEMPERATURE="0.7"
+export GEMINI_MAX_TOKENS="1000"
+export AI_PROVIDER="gemini"
 ```
 
-### Future AI Configuration (when dependencies are resolved)
+### Application Properties
 ```properties
-# Vertex AI Configuration
-spring.ai.vertex.ai.chat.api-key=YOUR_API_KEY
-spring.ai.vertex.ai.chat.project-id=YOUR_PROJECT_ID
-spring.ai.vertex.ai.chat.location=asia/kolkata
-spring.ai.vertex.ai.chat.model=gemini-1.5-flash
+# AI Configuration
+spring.ai.google.generative.ai.api-key=${GOOGLE_API_KEY:}
+spring.ai.google.generative.ai.model=${GEMINI_MODEL:gemini-2.0-flash}
+spring.ai.google.generative.ai.temperature=${GEMINI_TEMPERATURE:0.7}
+spring.ai.google.generative.ai.max-output-tokens=${GEMINI_MAX_TOKENS:1000}
+```
+
+### Environment File
+Copy `env.example` to `.env` and configure your API keys:
+
+```bash
+cp env.example .env
+# Edit .env with your actual API keys
 ```
 
 ## 🚀 Running the Application
@@ -147,6 +185,7 @@ spring.ai.vertex.ai.chat.model=gemini-1.5-flash
 ### Prerequisites
 - Java 21+ installed
 - Maven 3.6+ installed
+- Google API key for Gemini (optional, will fallback to mock)
 
 ### Quick Start
 1. **Clone and navigate to project**
@@ -154,20 +193,26 @@ spring.ai.vertex.ai.chat.model=gemini-1.5-flash
    cd SelfSens
    ```
 
-2. **Build the project**
+2. **Configure environment variables**
+   ```bash
+   export GOOGLE_API_KEY="your_api_key_here"
+   ```
+
+3. **Build the project**
    ```bash
    ./mvnw clean compile
    ```
 
-3. **Run the application**
+4. **Run the application**
    ```bash
    ./mvnw spring-boot:run
    ```
 
-4. **Access the API**
+5. **Access the API**
    - Base URL: `http://localhost:8080/api/`
    - Chat: `http://localhost:8080/api/chat/prompt`
    - Health: `http://localhost:8080/api/health`
+   - Service Info: `http://localhost:8080/api/chat/service-info`
 
 ## 🧪 Testing the API
 
@@ -176,9 +221,19 @@ spring.ai.vertex.ai.chat.model=gemini-1.5-flash
 curl http://localhost:8080/api/health
 ```
 
-### Chat API (Mock)
+### Chat API (with Gemini)
 ```bash
-curl "http://localhost:8080/api/chat/prompt?prompt=Tell me a joke"
+curl "http://localhost:8080/api/chat/prompt?prompt=What is Java programming?"
+```
+
+### Service Information
+```bash
+curl http://localhost:8080/api/chat/service-info
+```
+
+### Available Services
+```bash
+curl http://localhost:8080/api/chat/available-services
 ```
 
 ### Error Handling Test
@@ -188,16 +243,14 @@ curl "http://localhost:8080/api/chat/prompt?prompt="
 
 ## 📚 Dependencies
 
-### Current Dependencies
+### Core Dependencies
 - **Spring Boot 3.5.5** - Core framework
 - **Spring Web** - REST API support
+- **Spring AI 1.0.1** - AI integration framework
+- **Google Generative AI** - Gemini integration
 - **Jackson** - JSON serialization
 - **SLF4J + Logback** - Logging framework
 - **Spring Validation** - Input validation
-
-### Future Dependencies (when resolved)
-- **Spring AI 1.0.1** - AI integration
-- **Google Vertex AI** - AI model integration
 
 ## 🔍 Error Handling
 
@@ -220,34 +273,64 @@ The application includes comprehensive error handling:
 - **Request Path** - Endpoint information for debugging
 - **Timestamps** - Error occurrence timing
 
+## 🏗️ Architecture Patterns
+
+### 1. Factory Pattern
+- `AiServiceFactory` dynamically selects AI services
+- Easy to add new AI providers
+- Automatic fallback to available services
+
+### 2. Strategy Pattern
+- `AiModelService` interface allows different AI implementations
+- Easy to switch between AI providers
+- Mock service for development/testing
+
+### 3. Dependency Injection
+- Spring-managed beans for loose coupling
+- Easy to test and mock services
+- Configuration-driven service selection
+
+### 4. Template Method Pattern
+- Consistent API response format
+- Standardized error handling
+- Reusable validation logic
+
 ## 📈 Best Practices Implemented
 
 1. **Separation of Concerns** - Clear package structure
-2. **Dependency Injection** - Proper Spring DI usage
-3. **Exception Handling** - Centralized error management
-4. **Input Validation** - Comprehensive request validation
-5. **Logging** - Structured logging with appropriate levels
-6. **Constants Management** - Centralized configuration
-7. **Service Layer** - Business logic separation
-8. **DTO Pattern** - Consistent response format
-9. **Utility Classes** - Reusable helper methods
-10. **Professional Naming** - Clear and descriptive class names
+2. **Loose Coupling** - Interface-based design
+3. **Factory Pattern** - Dynamic service selection
+4. **Environment Configuration** - Secure API key management
+5. **Exception Handling** - Centralized error management
+6. **Input Validation** - Comprehensive request validation
+7. **Logging** - Structured logging with appropriate levels
+8. **Constants Management** - Centralized configuration
+9. **Service Layer** - Business logic separation
+10. **DTO Pattern** - Consistent response format
+11. **Utility Classes** - Reusable helper methods
+12. **Professional Naming** - Clear and descriptive class names
 
 ## 🔧 Troubleshooting
 
 ### Common Issues
 
-1. **Port Already in Use**
-   - Change `server.port` in `application.properties`
-   - Or kill the process using port 8080
+1. **AI Service Not Available**
+   - Check if `GOOGLE_API_KEY` is set
+   - Verify API key is valid
+   - Check logs for specific error messages
 
-2. **Build Failures**
+2. **Port Already in Use**
+   - Change `server.port` in `application.properties`
+   - Or set `SERVER_PORT` environment variable
+
+3. **Build Failures**
    - Run `./mvnw clean compile` to rebuild
    - Check Java version (requires Java 21+)
 
-3. **Application Not Starting**
-   - Check logs for error messages
-   - Verify all dependencies are resolved
+4. **AI Response Errors**
+   - Check Google API quota and limits
+   - Verify model name is correct
+   - Check network connectivity
 
 ### Logs
 - Application logs are displayed in the console
@@ -256,10 +339,10 @@ The application includes comprehensive error handling:
 
 ## 🚀 Next Steps
 
-1. **Resolve Spring AI Dependencies**
-   - Investigate Spring AI 1.0.1 compatibility
-   - Update to latest stable version if needed
-   - Test with actual AI service
+1. **Add More AI Providers**
+   - OpenAI GPT integration
+   - Anthropic Claude integration
+   - Local AI models (Ollama, etc.)
 
 2. **Add Production Features**
    - Authentication and authorization
@@ -272,12 +355,18 @@ The application includes comprehensive error handling:
    - Input sanitization improvements
    - CORS configuration
    - Security headers
-   - API key management
+   - API key rotation
+
+4. **Performance Optimization**
+   - Response caching
+   - Async processing
+   - Connection pooling
+   - Load balancing
 
 ## 📞 Support
 
-This application is built with enterprise-grade architecture and follows Spring Boot best practices. The current mock implementation provides a solid foundation for adding real AI functionality once dependency issues are resolved.
+This application is built with enterprise-grade architecture and follows Spring Boot best practices. The loose coupling design makes it easy to add new AI providers and switch between them without code changes.
 
 ---
 
-**Note**: The application is currently running with a mock chat service. To enable real AI functionality, resolve the Spring AI dependency issues and configure the appropriate AI service credentials.
+**Note**: The application automatically falls back to the mock service if the Gemini API is not configured or unavailable. Set the `GOOGLE_API_KEY` environment variable to enable real AI functionality.
