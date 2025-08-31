@@ -1,11 +1,13 @@
 package SelfSens.SelfSens.controller;
 
+import SelfSens.SelfSens.ProfilesData.ProfilesData;
 import SelfSens.SelfSens.config.EnvironmentConfig;
 import SelfSens.SelfSens.constants.ApplicationConstants;
 import SelfSens.SelfSens.dto.ApiResponse;
 import SelfSens.SelfSens.service.ChatService;
 import SelfSens.SelfSens.util.RequestUtils;
 import SelfSens.SelfSens.validation.ChatRequestValidator;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URI;
 import java.util.Optional;
 
 @RestController
@@ -27,6 +31,8 @@ public class ChatController {
     private final ChatRequestValidator validator;
     @Autowired
     private EnvironmentConfig environmentConfig;
+    @Autowired
+    private ProfilesData profilesData;
 
     public ChatController(ChatService chatService, ChatRequestValidator validator) {
         this.chatService = chatService;
@@ -36,7 +42,7 @@ public class ChatController {
     @GetMapping(ApplicationConstants.PROMPT_ENDPOINT)
     public ResponseEntity<ApiResponse<String>> generate(
             @RequestParam(value = "prompt", defaultValue = ApplicationConstants.DEFAULT_PROMPT) String prompt,
-            @RequestParam String authToken) {
+            @RequestParam String authToken , HttpServletRequest request) {
         
         try {
             // Validate the request
@@ -55,7 +61,19 @@ public class ChatController {
             
             // Generate response using service
             System.out.println("getting response... !");
-            String response = chatService.generateResponse(prompt);
+
+            String origin = request.getHeader("Origin");
+            String referer = request.getHeader("Referer");
+            String clientIp = request.getRemoteAddr();
+
+            System.out.println("Origin: " + origin);
+            System.out.println("Referer: " + referer);
+            System.out.println("Client IP: " + clientIp);
+            String gitHubUserName = extractGithubUsername(origin);
+            System.out.println("github username : " + gitHubUserName);
+
+            String adminPrompt = buildPrompt(gitHubUserName , prompt);
+            String response = chatService.generateResponse(adminPrompt);
             System.out.println("result: "+ response);
             
             // Create success response
@@ -132,5 +150,33 @@ public class ChatController {
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
         }
+    }
+
+    public String buildPrompt(String profileId , String userPrompt){
+        return "You are SelfServe.AI. Carefully read the given profile data: ["
+                + profilesData.getProfileById(profileId)
+                + "]. Identify the person's name from this profile and act as that individual in all responses. "
+                + "Always reply in the first person, as if you are that person. "
+                + "Do not reveal or repeat the raw profile data. "
+                + "Do not ask any counter-questions or seek clarification in your responses. "
+                + "Answer strictly based on the profile information provided. "
+                + "If the question is unrelated or not covered in the profile, respond with: 'I only know about this profile.' "
+                + "All responses must be professional, natural, human-like, and uniquely phrased. "
+                + "User query: " + userPrompt;
+    }
+
+    public String extractGithubUsername(String origin) {
+        if (origin == null || origin.isEmpty()) return "guddu1cse";
+        try {
+            URI uri = new URI(origin);
+            String host = uri.getHost();
+
+            if (host != null && host.endsWith(".github.io")) {
+                return host.replace(".github.io", "");
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing origin: " + e.getMessage());
+        }
+        return "guddu1cse";
     }
 }
