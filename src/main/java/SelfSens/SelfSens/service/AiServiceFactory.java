@@ -18,8 +18,7 @@ public class AiServiceFactory {
     
     private final EnvironmentConfig environmentConfig;
     private final Map<String, AiModelService> aiServices;
-    @Autowired
-     private RestTemplate restTemplate;
+    
     @Autowired
     public AiServiceFactory(
             EnvironmentConfig environmentConfig,

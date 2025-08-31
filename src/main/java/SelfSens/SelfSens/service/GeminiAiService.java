@@ -22,7 +22,6 @@ import java.util.Map;
 public class GeminiAiService implements AiModelService {
     
     private static final Logger logger = LoggerFactory.getLogger(GeminiAiService.class);
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
     
     private final EnvironmentConfig environmentConfig;
     private final RestTemplate restTemplate;
@@ -62,7 +61,7 @@ public class GeminiAiService implements AiModelService {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             
             ResponseEntity<Map> response = restTemplate.exchange(
-                GEMINI_API_URL,
+                environmentConfig.getGeminiApiUrl(),
                 HttpMethod.POST,
                 request,
                 Map.class,

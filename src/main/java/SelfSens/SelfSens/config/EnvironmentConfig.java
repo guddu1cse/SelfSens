@@ -18,6 +18,12 @@ public class EnvironmentConfig {
     @Value("${GEMINI_MAX_TOKENS:1000}")
     private Integer geminiMaxTokens;
     
+    @Value("${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/models}")
+    private String geminiBaseUrl;
+    
+    @Value("${GEMINI_ENDPOINT:generateContent}")
+    private String geminiEndpoint;
+    
     @Value("${AI_PROVIDER:gemini}")
     private String aiProvider;
 
@@ -40,6 +46,18 @@ public class EnvironmentConfig {
     
     public Integer getGeminiMaxTokens() {
         return geminiMaxTokens;
+    }
+    
+    public String getGeminiApiUrl() {
+        return geminiBaseUrl + "/" + geminiModel + ":" + geminiEndpoint;
+    }
+    
+    public String getGeminiBaseUrl() {
+        return geminiBaseUrl;
+    }
+    
+    public String getGeminiEndpoint() {
+        return geminiEndpoint;
     }
     
     public String getAiProvider() {

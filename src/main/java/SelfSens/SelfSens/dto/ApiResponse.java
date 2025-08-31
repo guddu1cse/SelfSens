@@ -1,5 +1,6 @@
 package SelfSens.SelfSens.dto;
 
+import SelfSens.SelfSens.entities.ProfileDetails;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;
 
