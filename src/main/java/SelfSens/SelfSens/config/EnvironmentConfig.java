@@ -29,6 +29,9 @@ public class EnvironmentConfig {
 
     @Value("${API_AUTH_TOKEN:}")
     private String authToken;
+
+    @Value("${DEFAULT_USER_NAME:}")
+    private String defaultUserName;
     
     public String getGoogleApiKey() {
         return googleApiKey;
@@ -63,6 +66,8 @@ public class EnvironmentConfig {
     public String getAiProvider() {
         return aiProvider;
     }
+
+    public String getDefaultUserName() {return defaultUserName; }
     
     public boolean isGoogleApiKeyConfigured() {
         return googleApiKey != null && !googleApiKey.trim().isEmpty();

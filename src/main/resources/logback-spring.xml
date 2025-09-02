@@ -1,30 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    
-    <springProfile name="!prod">
-        <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-    </springProfile>
-    
+
+    <!-- Console appender (always) -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- File appender (for prod) -->
     <springProfile name="prod">
         <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
     </springProfile>
-    
-    <!-- Custom logger for SelfSens application -->
-    <logger name="SelfSens.SelfSens" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-    </logger>
-    
-    <!-- Log level for Spring AI -->
-    <logger name="org.springframework.ai" level="WARN"/>
-    
-    <!-- Log level for Spring Framework -->
-    <logger name="org.springframework" level="INFO"/>
-    
-    <!-- Root logger -->
+
+    <!-- Root logger (default: console only) -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
     </root>
+
+    <!-- Root logger override for prod (console + file) -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
 </configuration>

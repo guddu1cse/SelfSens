@@ -166,7 +166,7 @@ public class ChatController {
     }
 
     public String extractGithubUsername(String origin) {
-        if (origin == null || origin.isEmpty()) return "guddu1cse";
+        if (origin == null || origin.isEmpty()) return environmentConfig.getDefaultUserName();
         try {
             URI uri = new URI(origin);
             String host = uri.getHost();
@@ -177,6 +177,6 @@ public class ChatController {
         } catch (Exception e) {
             System.err.println("Error parsing origin: " + e.getMessage());
         }
-        return "guddu1cse";
+        return environmentConfig.getDefaultUserName();
     }
 }
