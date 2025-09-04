@@ -42,7 +42,7 @@ public class ChatController {
     @GetMapping(ApplicationConstants.PROMPT_ENDPOINT)
     public ResponseEntity<ApiResponse<String>> generate(
             @RequestParam(value = "prompt", defaultValue = ApplicationConstants.DEFAULT_PROMPT) String prompt,
-            @RequestParam String authToken , HttpServletRequest request) {
+            @RequestParam String authToken , @RequestParam(required = false) String adminOrigin , HttpServletRequest request) {
         
         try {
             // Validate the request
@@ -62,7 +62,7 @@ public class ChatController {
             // Generate response using service
             System.out.println("getting response... !");
 
-            String origin = request.getHeader("Origin");
+            String origin = adminOrigin == null ? request.getHeader("Origin") : adminOrigin;
             String referer = request.getHeader("Referer");
             String clientIp = request.getRemoteAddr();
 

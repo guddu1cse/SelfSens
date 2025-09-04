@@ -13,7 +13,7 @@ public final class ApplicationConstants {
     public static final String SERVICE_VERSION = "1.0.0";
     
     // Default Values
-    public static final String DEFAULT_PROMPT = "Tell me a joke about spring boot.";
+    public static final String DEFAULT_PROMPT = "Tell me about yourself ?";
     
     // Error Messages
     public static final String GENERIC_ERROR_MESSAGE = "An unexpected error occurred";
