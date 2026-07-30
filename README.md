@@ -370,3 +370,4 @@ This application is built with enterprise-grade architecture and follows Spring 
 ---
 
 **Note**: The application automatically falls back to the mock service if the Gemini API is not configured or unavailable. Set the `GOOGLE_API_KEY` environment variable to enable real AI functionality.
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/eff7208d-d857-413c-b0bd-b0d442c0463b" />
